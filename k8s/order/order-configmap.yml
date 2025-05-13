@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-configmap
+data:
+  docker-internal-url: http://host.docker.internal
+  kafka-service: kafka-svc
