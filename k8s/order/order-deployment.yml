@@ -1,63 +1,11 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: order-deployment
-spec:
-  template:
-    metadata:
-      name: order-pod
-      labels:
-        app: kims-convenience
-        tier: backend
-        type: order
-    spec:
-      containers:
-        - name: order-container
-          image: anshikam/kims-convenience-order
-          env:
-            - name: MYSQL_SERVER
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-order-config-map
-                  key: mysql-server
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-order-config-map
-                  key: mysql-database-name
-            - name: DB_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-order-config-map
-                  key: mysql-user-username
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-order-pass
-                  key: mysql-user-password
-            - name: DOCKER_INTERNAL
-              valueFrom:
-                configMapKeyRef:
-                  name: order-configmap
-                  key: docker-internal-url
-            - name: KAFKA_SERVER
-              valueFrom:
-                configMapKeyRef:
-                  name: order-configmap
-                  key: kafka-service
-  replicas: 1
-  selector:
-    matchLabels:
-      app: kims-convenience
-      tier: backend
-      type: order
-
----
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: order
+  name: kc-order-service
+  labels:
+    app: kims-convenience
+    tier: backend
+    type: kc-order
 spec:
   type: NodePort
   ports:
@@ -67,4 +15,64 @@ spec:
   selector:
     app: kims-convenience
     tier: backend
-    type: order
+    type: kc-order
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kc-order-deployment
+  labels:
+    app: kims-convenience
+    tier: backend
+    type: kc-order
+spec:
+  template:
+    metadata:
+      name: kc-order-pod
+      labels:
+        app: kims-convenience
+        tier: backend
+        type: kc-order
+    spec:
+      containers:
+        - name: kc-order
+          image: anshikam/kims-convenience-order
+          env:
+            - name: MYSQL_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-mysql-configmap
+                  key: mysql-server
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-mysql-configmap
+                  key: mysql-database-name
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-mysql-configmap
+                  key: mysql-user-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kc-order-mysql-secret
+                  key: mysql-user-password
+            - name: DOCKER_INTERNAL
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-configmap
+                  key: docker-internal-url
+            - name: KAFKA_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-configmap
+                  key: kafka-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kims-convenience
+      tier: backend
+      type: kc-order

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mysql-order-config-map
+  name: kc-order-mysql-configmap
 data:
-  mysql-server: mysql-order
+  mysql-server: kc-order-mysql-service
   mysql-database-name: order_db
   mysql-user-username: dummy
   loki-push-url: http://host.docker.internal

@@ -1,94 +1,94 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mysql-order-deployment
-  labels:
-    app: kims-convenience
-    tier: database
-    type: mysql-order
-spec:
-  selector:
-    matchLabels:
-      app: kims-convenience
-      tier: database
-      type: mysql-order
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      name: mysql-order-pod
-      labels:
-        app: kims-convenience
-        tier: database
-        type: mysql-order
-    spec:
-      containers:
-        - image: mysql:5.6
-          name: mysql
-          env:
-            - name: MYSQL_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-order-config-map
-                  key: mysql-database-name
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-order-pass
-                  key: mysql-root-password
-            - name: MYSQL_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-order-config-map
-                  key: mysql-user-username
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-order-pass
-                  key: mysql-user-password
-          livenessProbe:
-            tcpSocket:
-              port: 3306
-          ports:
-            - containerPort: 3306
-              name: mysql
-          volumeMounts:
-            - name: mysql-order-persistent-storage
-              mountPath: /var/lib/mysql
-      volumes:
-        - name: mysql-order-persistent-storage
-          persistentVolumeClaim:
-            claimName: mysql-order-pvc
-
----
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-order  # mysql -h mysql-order -u root -p
+  name: kc-order-mysql-service # mysql -h kc-order-mysql-service -u root -p
   labels:
     app: kims-convenience
     tier: database
-    type: mysql-order
+    type: kc-order-mysql
 spec:
   ports:
     - port: 3306
   selector:
     app: kims-convenience
     tier: database
-    type: mysql-order
+    type: kc-order-mysql
   clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kc-order-mysql-deployment
+  labels:
+    app: kims-convenience
+    tier: database
+    type: kc-order-mysql
+spec:
+  selector:
+    matchLabels:
+      app: kims-convenience
+      tier: database
+      type: kc-order-mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: kc-order-mysql-pod
+      labels:
+        app: kims-convenience
+        tier: database
+        type: kc-order-mysql
+    spec:
+      containers:
+        - image: mysql:5.6
+          name: kc-order-mysql
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-mysql-configmap
+                  key: mysql-database-name
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kc-order-mysql-secret
+                  key: mysql-root-password
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: kc-order-mysql-configmap
+                  key: mysql-user-username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kc-order-mysql-secret
+                  key: mysql-user-password
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+          ports:
+            - containerPort: 3306
+              name: kc-order-mysql
+          volumeMounts:
+            - name: kc-order-mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: kc-order-mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: kc-order-mysql-pvc
 
 ---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-order-pvc
+  name: kc-order-mysql-pvc
   labels:
     app: kims-convenience
     tier: database
-    type: mysql-order
+    type: kc-order-mysql
 spec:
   accessModes:
     - ReadWriteOnce
